@@ -6,8 +6,14 @@ Production-ready Android mock test app (Kotlin + Compose + MVVM + Hilt + Supabas
 1. Create Supabase project.
 2. Run SQL from `docs/supabase_schema.sql`.
 3. Enable Email auth in Supabase Auth settings.
-4. Put `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `app/build.gradle.kts` buildConfigField values.
-5. Sync Gradle, then Clean/Rebuild and reinstall the app on Android API 24+.
+4. Add credentials in **any one** of these places:
+   - global `~/.gradle/gradle.properties`
+   - project `gradle.properties`
+   - project `local.properties`
+   with:
+   - `SUPABASE_URL=https://<your-project-ref>.supabase.co`
+   - `SUPABASE_ANON_KEY=<your-anon-key>`
+5. Sync Gradle, then Clean/Rebuild and reinstall the app on Android API 24+ (old APK keeps old BuildConfig values).
 
 ## Architecture
 - MVVM with repositories.

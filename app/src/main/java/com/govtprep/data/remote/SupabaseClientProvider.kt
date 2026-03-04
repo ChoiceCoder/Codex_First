@@ -7,6 +7,9 @@ import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.postgrest.Postgrest
 
 object SupabaseClientProvider {
+    private const val DEFAULT_URL = "https://your-project-ref.supabase.co"
+    private const val DEFAULT_ANON_KEY = "your-anon-key"
+
     private var cachedClient: SupabaseClient? = null
 
     fun clientOrNull(): SupabaseClient? = runCatching { clientOrThrow() }.getOrNull()
@@ -14,18 +17,22 @@ object SupabaseClientProvider {
     fun clientOrThrow(): SupabaseClient {
         cachedClient?.let { return it }
 
-        val url = BuildConfig.SUPABASE_URL.trim()
-        val key = BuildConfig.SUPABASE_ANON_KEY.trim()
+        val rawUrl = BuildConfig.SUPABASE_URL.trim().removeSurrounding("\"")
+        val rawKey = BuildConfig.SUPABASE_ANON_KEY.trim().removeSurrounding("\"")
+        val url = normalizeUrl(rawUrl)
+        val key = rawKey
 
         val looksConfigured =
             url.isNotBlank() &&
                 key.isNotBlank() &&
-                url.startsWith("https://", ignoreCase = true) &&
-                !url.contains("your-project-ref", ignoreCase = true) &&
-                !key.contains("your-anon-key", ignoreCase = true)
+                url != DEFAULT_URL &&
+                key != DEFAULT_ANON_KEY
 
         if (!looksConfigured) {
-            error("Supabase config invalid. Check SUPABASE_URL and SUPABASE_ANON_KEY in BuildConfig.")
+            error(
+                "Supabase config invalid. Check SUPABASE_URL and SUPABASE_ANON_KEY in BuildConfig. " +
+                    "Current URL: '$url'"
+            )
         }
 
         val created = runCatching {
@@ -45,4 +52,8 @@ object SupabaseClientProvider {
         cachedClient = created
         return created
     }
+
+    private fun normalizeUrl(url: String): String =
+        if (url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true)) url else "https://$url"
 }
+

@@ -1,9 +1,37 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
+
+val defaultSupabaseUrl = "https://your-project-ref.supabase.co"
+val defaultSupabaseAnonKey = "your-anon-key"
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use(::load)
+    }
+}
+
+fun resolveSecret(name: String, default: String): String {
+    val fromGradle = (project.findProperty(name) as String?)?.trim()
+    if (!fromGradle.isNullOrBlank()) return fromGradle
+
+    val fromLocal = localProperties.getProperty(name)?.trim()
+    if (!fromLocal.isNullOrBlank()) return fromLocal
+
+    val fromEnv = System.getenv(name)?.trim()
+    if (!fromEnv.isNullOrBlank()) return fromEnv
+
+    return default
+}
+
+val supabaseUrl = resolveSecret("SUPABASE_URL", defaultSupabaseUrl)
+val supabaseAnonKey = resolveSecret("SUPABASE_ANON_KEY", defaultSupabaseAnonKey)
 
 android {
     namespace = "com.govtprep"
@@ -19,8 +47,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField("String", "SUPABASE_URL", "\"https://your-project-ref.supabase.co\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"your-anon-key\"")
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {
