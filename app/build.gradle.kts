@@ -19,8 +19,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField("String", "SUPABASE_URL", '"https://your-project-ref.supabase.co"')
-        buildConfigField("String", "SUPABASE_ANON_KEY", '"your-anon-key"')
+        buildConfigField("String", "SUPABASE_URL", "\"https://your-project-ref.supabase.co\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"your-anon-key\"")
     }
 
     buildTypes {
