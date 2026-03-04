@@ -16,8 +16,7 @@ import javax.inject.Inject
 
 class SupabaseDataSource @Inject constructor() {
     private fun client(): SupabaseClient =
-        SupabaseClientProvider.clientOrNull()
-            ?: error("Supabase is not configured. Set valid SUPABASE_URL and SUPABASE_ANON_KEY.")
+        SupabaseClientProvider.clientOrThrow()
 
     suspend fun signUp(email: String, password: String) =
         client().auth.signUpWith(Email) {
@@ -33,7 +32,9 @@ class SupabaseDataSource @Inject constructor() {
 
     suspend fun logout() = client().auth.signOut()
 
-    fun currentUserId(): String? = SupabaseClientProvider.clientOrNull()?.auth?.currentUserOrNull()?.id
+    fun currentUserId(): String? = runCatching {
+        SupabaseClientProvider.clientOrThrow().auth.currentUserOrNull()?.id
+    }.getOrNull()
 
     suspend fun fetchUserProfile(userId: String): UserProfile? =
         client().from("users").select {
